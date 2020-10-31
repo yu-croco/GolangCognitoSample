@@ -8,13 +8,19 @@ import (
 )
 
 // see: https://docs.aws.amazon.com/code-samples/latest/catalog/go-cognito-CognitoListUsers.go.html
-func NewCognitoSession()*cognitoidentityprovider.CognitoIdentityProvider {
+func newCognitoSession()*cognitoidentityprovider.CognitoIdentityProvider {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
 	return cognitoidentityprovider.New(sess)
 }
+
+func findUsersByPoolId(userPoolId string) (*cognitoidentityprovider.ListUsersOutput, error) {
+	return newCognitoSession().
+		ListUsers(&cognitoidentityprovider.ListUsersInput{UserPoolId: &userPoolId})
+}
+
 func findSubs(userList *cognitoidentityprovider.ListUsersOutput) []string {
 	var userSubs []string
 
@@ -31,8 +37,7 @@ func findSubs(userList *cognitoidentityprovider.ListUsersOutput) []string {
 func Handler() error {
 	userPoolId := "ADD ME!!"
 
-	userList, cognitoErr := NewCognitoSession().
-		ListUsers(&cognitoidentityprovider.ListUsersInput{UserPoolId: &userPoolId})
+	userList, cognitoErr := findUsersByPoolId(userPoolId)
 	if cognitoErr != nil {
 		return cognitoErr
 	}
